@@ -251,7 +251,7 @@ form {
   color: orange;
 }
 
-[type="date"] {
+input[type="date"] {
   font-style: inherit;
   background: var(--clr-light);
   border: none;
