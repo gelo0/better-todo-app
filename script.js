@@ -41,6 +41,17 @@ tasksContainer.addEventListener('click', e => {
   }
 }) 
 
+tasksContainer.addEventListener('change', e => {
+  if (e.target.className === 'date-input') {
+    const selectedList = lists.find(list => list.id === selectedListId)
+    const selectedTask = selectedList.tasks.find(task => task.id === e.target.id)
+    console.log(e.target.value)
+    selectedTask.dueDate = e.target.value
+    saveAndRender()
+    renderTaskCount(selectedList)
+  }
+}) 
+
 clearCompleteTasksButton.addEventListener('click', e => {
   const selectedList = lists.find(list => list.id === selectedListId)
   selectedList.tasks = selectedList.tasks.filter(task => !task.complete)
@@ -87,7 +98,8 @@ function createTask(name) {
     id: Date.now().toString(),
     name: name,
     complete: false,
-    priority: false
+    priority: false,
+    dueDate: formatDate()
   }
 }
 
@@ -130,6 +142,10 @@ function renderTasks(selectedList) {
     const star = taskElement.querySelector('.fa')
     star.setAttribute('id', task.id)
     task.priority ? star.classList.add('checked') : star.classList.remove('checked')
+    const dueDate = taskElement.querySelector('.date-input')
+    dueDate.id = task.id
+    console.log(task.dueDate)
+    dueDate.value = task.dueDate
     tasksContainer.appendChild(taskElement)
   })
 }
@@ -155,6 +171,11 @@ function clearElement(element) {
   while (element.firstChild) {
     element.removeChild(element.firstChild)
   }
+}
+
+function formatDate() {
+  let today = new Date()
+  return today.getFullYear() + '-' + ('0' + (today.getMonth() + 1)).slice(-2) + '-' + ('0' + today.getDate()).slice(-2);
 }
 
 render()
