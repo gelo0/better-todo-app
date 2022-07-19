@@ -32,6 +32,13 @@ tasksContainer.addEventListener('click', e => {
     save()
     renderTaskCount(selectedList)
   }
+  if (e.target.tagName.toLowerCase() === 'div') {
+    const selectedList = lists.find(list => list.id === selectedListId)
+    const selectedTask = selectedList.tasks.find(task => task.id === e.target.id)
+    selectedTask.priority = !selectedTask.priority
+    saveAndRender()
+    renderTaskCount(selectedList)
+  }
 }) 
 
 clearCompleteTasksButton.addEventListener('click', e => {
@@ -79,7 +86,8 @@ function createTask(name) {
   return {
     id: Date.now().toString(),
     name: name,
-    complete: false
+    complete: false,
+    priority: false
   }
 }
 
@@ -119,6 +127,9 @@ function renderTasks(selectedList) {
     const label = taskElement.querySelector('label')
     label.htmlFor = task.id
     label.append(task.name)
+    const star = taskElement.querySelector('.fa')
+    star.setAttribute('id', task.id)
+    task.priority ? star.classList.add('checked') : star.classList.remove('checked')
     tasksContainer.appendChild(taskElement)
   })
 }
