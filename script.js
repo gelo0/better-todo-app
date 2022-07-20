@@ -45,7 +45,6 @@ tasksContainer.addEventListener('change', e => {
   if (e.target.className === 'date-input') {
     const selectedList = lists.find(list => list.id === selectedListId)
     const selectedTask = selectedList.tasks.find(task => task.id === e.target.id)
-    console.log(e.target.value)
     selectedTask.dueDate = e.target.value
     saveAndRender()
     renderTaskCount(selectedList)
@@ -78,9 +77,10 @@ newTaskForm.addEventListener('submit', e => {
   e.preventDefault()
   const taskName = newTaskInput.value
   if (taskName == null || taskName === '') return
-  const task = createTask(taskName)
-  newTaskInput.value = null
   const selectedList = lists.find(list => list.id === selectedListId)
+  const task = createTask(taskName, selectedList)
+  newTaskInput.value = null
+  
   selectedList.tasks.push(task)
   saveAndRender()
 })
@@ -93,13 +93,14 @@ function createList(name) {
   }
 }
 
-function createTask(name) {
+function createTask(name,selectedList) {
   return {
     id: Date.now().toString(),
     name: name,
     complete: false,
     priority: false,
-    dueDate: formatDate()
+    dueDate: formatDate(),
+    listName: selectedList.name
   }
 }
 
@@ -138,25 +139,41 @@ function renderTasks(selectedList) {
     checkbox.checked = task.complete
     const label = taskElement.querySelector('label')
     label.htmlFor = task.id
-    label.append(task.name)
+    selectedListId === 'today' ? label.append(`${task.name} (${task.listName})`) : label.append(task.name)
     const star = taskElement.querySelector('.fa')
     star.setAttribute('id', task.id)
     task.priority ? star.classList.add('checked') : star.classList.remove('checked')
     const dueDate = taskElement.querySelector('.date-input')
     dueDate.id = task.id
-    console.log(task.dueDate)
     dueDate.value = task.dueDate
     tasksContainer.appendChild(taskElement)
   })
 }
 
 function renderTaskCount(selectedList) {
-  const incompleteTasksCount = selectedList.tasks.filter(task => !task.complete).length
-  const taskString = incompleteTasksCount === 1 ? 'task' : 'tasks'
-  listCountElement.innerText = `${incompleteTasksCount} ${taskString} remaining`
+    const incompleteTasksCount = selectedList.tasks.filter(task => !task.complete).length
+    const taskString = incompleteTasksCount === 1 ? 'task' : 'tasks'
+    listCountElement.innerText = `${incompleteTasksCount} ${taskString} remaining`
+}
+
+function addTasksToTodayList(lists) {
+  lists[0].tasks = []
+  let todayLists = lists.filter(n => n.id != 'today')
+  todayLists.forEach(list => {
+    list.tasks.forEach(task => {
+      if (task.dueDate === formatDate()) {
+        lists[0].tasks.push(task)
+      }
+    })
+  })
 }
 
 function renderLists() {
+  let todayList = createList('Today')
+  todayList.id = 'today'
+  if (!lists.find(n => n.id === 'today')) lists.unshift(todayList)
+  addTasksToTodayList(lists)
+
   lists.forEach(list => {
     const listElement  =document.createElement('li')
     listElement.dataset.listId = list.id
@@ -177,5 +194,6 @@ function formatDate() {
   let today = new Date()
   return today.getFullYear() + '-' + ('0' + (today.getMonth() + 1)).slice(-2) + '-' + ('0' + today.getDate()).slice(-2);
 }
+
 
 render()
